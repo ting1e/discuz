@@ -16,7 +16,7 @@ centos + python3.9
 ```
 
  - 安装依赖，可以先直接运行 `python3 discuz.py`，缺哪个库装那个，直到日志（info.log）中显示登录成功的信息
- - crontab添加定时任务 示例 `*/6 * * * * cd /root/discuz_bot/ &&python3 discuz.py` 目录改成自己的
+ - crontab添加定时任务，每过6分钟执行一次回帖示例 `*/6 * * * * cd /root/discuz_bot/ && python3 discuz.py` 目录改成自己的
 
 ## 示例
 ![](demo.png)
