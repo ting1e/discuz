@@ -1,11 +1,13 @@
 # discuz
 
-模拟登录discuz论坛，设置定时后自动回帖刷币
+全自动登录discuz论坛，签到，回帖刷币
 
+## 环境
+centos + python3.9
 
 ## 运行方式
  - 克隆仓库
- - discuz.py文件内添加论坛地址、账号、密码等信息
+ - discuz.py文件内修改论坛地址、账号、密码等信息
 
  ```
     hostname = ''   #论坛地址
