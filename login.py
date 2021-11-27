@@ -108,7 +108,7 @@ class Login:
                     self.session = pickle.load(f)
                 response = self.session.get(f'https://{self.hostname}/home.php?mod=space').text
                 
-                if "退出" in response and "用户登录" not in response:
+                if "退出" in response and "登录" not in response:
                     logging.info('从文件中恢复Cookie成功，跳过登录。')
                     return True
             except Exception:
@@ -121,6 +121,13 @@ class Login:
     def go_home(self):
         return self.session.get(f'https://{self.hostname}/forum.php').text
 
+    def get_conis(self):
+        try:
+            res = self.session.get(f'https://{self.hostname}/home.php?mod=spacecp&ac=credit&showcredit=1&inajax=1&ajaxtarget=extcreditmenu_menu').text
+            coins = re.search(r'<span id="hcredit_2">(.+?)</span>', res).group(1)
+            logging.info(f'当前金币数量：{coins}')
+        except Exception:
+            logging.error('获取金币数量失败！', exc_info=True)
 
     def main(self):
 
@@ -129,7 +136,13 @@ class Login:
                 logging.info('成功使用cookies登录')
             else:
                 self.account_login()
-            self.go_home()
+            res = self.go_home()
+            self.post_formhash = re.search(r'<input type="hidden" name="formhash" value="(.+?)" />', res).group(1)
+            credit =re.search(r' class="showmenu">(.+?)</a>', res).group(1)
+            logging.info(f'{credit},提交文章formhash:{self.post_formhash}')
+
+            self.get_conis()
+
             cookies_name = 'COOKIES-' + self.username
             with open(cookies_name, 'wb') as f:
                 pickle.dump(self.session, f)

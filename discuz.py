@@ -8,24 +8,36 @@ from random import randint
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse,urlsplit,parse_qsl
 import requests
-
+import sys
 logging.basicConfig(level=logging.INFO,filename='info.log',format="%(asctime)s %(filename)s %(funcName)s：line %(lineno)d %(levelname)s %(message)s")
 
 
 class Discuz:
-    def __init__(self, hostname, username, password, questionid='0', answer=None, cookies_flag=True):
+    def __init__(self, hostname, username, password, questionid='0', answer=None, cookies_flag=True,pub_url = ''):
         self.discuz_login = login.Login(hostname, username, password, questionid, answer, cookies_flag)
         self.hostname = hostname 
-      
+        if pub_url !='':
+            self.hostname = self.get_host(pub_url)
 
         self.login_hash,self.form_hash = self.discuz_login.form_hash()
     
     def login(self):
         self.discuz_login.main()
         self.session = self.discuz_login.session
+        self.formhash = self.discuz_login.post_formhash
 
     
-  
+    def get_host(self,pub_url):  
+        res = requests.get(pub_url)
+        res.encoding = "utf-8"
+        url = re.search(r'a href="https://(.+?)/".+?搜书吧最新地址', res.text)
+        if url != None:
+            url = url.group(1)
+            logging.info(f'获取到最新的论坛地址:https://{url}')
+            return url
+        else:
+            logging.error(f'获取失败，请检查发布页是否可用{pub_url}')
+            return self.hostname
 
     def go_home(self):
         return self.session.get(f'https://{self.hostname}/forum.php').text
@@ -64,9 +76,6 @@ class Discuz:
         
 
     def reply(self,tid,message=''):
-        subject_url = f'https://{self.hostname}/forum.php?mod=viewthread&tid={tid}&extra=&page=1'
-        resp = self.session.get(subject_url).text
-        formhash = re.search(r'<input type="hidden" name="formhash" value="(.+?)" />', resp).group(1)
 
         reply_list = ['膜拜神贴，后面的请保持队形~',
         '啥也不说了，楼主就是给力！',
@@ -84,7 +93,7 @@ class Discuz:
             'file': '',
             'message': msg.encode('gbk'),
             'posttime': int(time()),
-            'formhash': formhash,
+            'formhash': self.formhash,
             'usesig': 1,
             'subject': '',
         }
@@ -95,6 +104,7 @@ class Discuz:
             logging.info(f'回复发送成功，tid:{tid}，回复:{msg},链接:{"https://"+self.hostname+"/"+url}')
         else :
             logging.error('回复发送失败\t'+res)
+
 
 
 if __name__ == '__main__':
