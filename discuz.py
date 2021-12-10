@@ -14,12 +14,10 @@ logging.basicConfig(level=logging.INFO,filename='info.log',format="%(asctime)s %
 
 class Discuz:
     def __init__(self, hostname, username, password, questionid='0', answer=None, cookies_flag=True,pub_url = ''):
-        self.discuz_login = login.Login(hostname, username, password, questionid, answer, cookies_flag)
         self.hostname = hostname 
         if pub_url !='':
             self.hostname = self.get_host(pub_url)
-
-        self.login_hash,self.form_hash = self.discuz_login.form_hash()
+        self.discuz_login = login.Login(self.hostname, username, password, questionid, answer, cookies_flag)
     
     def login(self):
         self.discuz_login.main()
@@ -30,7 +28,7 @@ class Discuz:
     def get_host(self,pub_url):  
         res = requests.get(pub_url)
         res.encoding = "utf-8"
-        url = re.search(r'a href="https://(.+?)/".+?搜书吧最新地址', res.text)
+        url = re.search(r'a href="https://(.+?)/".+?最新地址', res.text)
         if url != None:
             url = url.group(1)
             logging.info(f'获取到最新的论坛地址:https://{url}')

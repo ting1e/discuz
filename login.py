@@ -58,7 +58,7 @@ class Login:
         while num>0:
             num -=1
             code = self.verify_code_once()
-            verify_url = f'https://www.facebook.metaburge.com/misc.php?mod=seccode&action=check&inajax=1&modid=member::logging&idhash=cSA&secverify={code}'
+            verify_url = f'https://{self.hostname}/misc.php?mod=seccode&action=check&inajax=1&modid=member::logging&idhash=cSA&secverify={code}'
             res = self.session.get(verify_url).text
 
             if 'succeed' in res:
