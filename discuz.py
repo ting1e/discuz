@@ -56,7 +56,6 @@ class Discuz:
             for a in reply.find_all("a"):
                 if '机器人' in str(a) or '测试' in str(a) or '封号' in str(a):
                     continue
-                logging.error(a)
                 dt = dict(parse_qsl(urlsplit(a['href']).query))
                 if 'tid' in dt.keys():
                     tids.append(dt['tid'])
