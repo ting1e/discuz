@@ -17,6 +17,7 @@ class Discuz:
         self.hostname = hostname 
         if pub_url !='':
             self.hostname = self.get_host(pub_url)
+
         self.discuz_login = login.Login(self.hostname, username, password, questionid, answer, cookies_flag)
     
     def login(self):
@@ -28,7 +29,7 @@ class Discuz:
     def get_host(self,pub_url):  
         res = requests.get(pub_url)
         res.encoding = "utf-8"
-        url = re.search(r'a href="https://(.+?)/".+?最新地址', res.text)
+        url = re.search(r'a href="https://(.+?)/".+?>搜书吧入口', res.text)
         if url != None:
             url = url.group(1)
             logging.info(f'获取到最新的论坛地址:https://{url}')
@@ -43,25 +44,22 @@ class Discuz:
     def get_reply_tid_list(self):
         tids = []
         soup = BeautifulSoup(self.go_home(),features="html.parser")
-
+        replys = []
         reply = soup.select_one('.subjectbox')
-        for a in reply.find_all("a"):
-            dt = dict(parse_qsl(urlsplit(a['href']).query))
-            if 'tid' in dt.keys():
-                tids.append(dt['tid'])
-
+        replys.append(reply)
         reply = soup.select_one('.replaybox')
-        for a in reply.find_all("a"):
-            dt = dict(parse_qsl(urlsplit(a['href']).query))
-            if 'tid' in dt.keys():
-                tids.append(dt['tid'])
-
+        replys.append(reply)
         reply = soup.select_one('.hottiebox')
-        for a in reply.find_all("a"):
-            dt = dict(parse_qsl(urlsplit(a['href']).query))
-            if 'tid' in dt.keys():
-                tids.append(dt['tid'])
+        replys.append(reply)
 
+        for reply in replys:
+            for a in reply.find_all("a"):
+                if '机器人' in str(a) or '测试' in str(a) or '封号' in str(a):
+                    continue
+                logging.error(a)
+                dt = dict(parse_qsl(urlsplit(a['href']).query))
+                if 'tid' in dt.keys():
+                    tids.append(dt['tid'])
         return tids
 
     def get_reply_tid(self):
@@ -98,7 +96,7 @@ class Discuz:
 
         res = self.session.post(reply_url,data=data).text
         if 'succeed' in res:
-            url = re.search(r'succeedhandle_fastpost\(\'(.+?)\',', res).group(1)
+            url = re.search(r'succeedhandle_register\(\'(.+?)\',', res).group(1)
             logging.info(f'回复发送成功，tid:{tid}，回复:{msg},链接:{"https://"+self.hostname+"/"+url}')
         else :
             logging.error('回复发送失败\t'+res)
