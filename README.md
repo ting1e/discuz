@@ -1,3 +1,5 @@
+兄弟们别光fork啊，点个star吧
+
 # discuz
 
 全自动登录discuz论坛，签到，回帖刷币
