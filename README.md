@@ -1,4 +1,4 @@
-兄弟们别光fork啊，点个star吧
+# 兄弟们别光fork啊，点个star吧
 
 # discuz
 
