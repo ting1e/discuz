@@ -70,12 +70,37 @@ class Login:
         logging.error('验证码获取失败，请增加验证次数或检查当前验证码识别功能是否正常')
         return ''
 
+    def account_login_without_verify(self):
+
+        loginhash, formhash = self.form_hash()
+        login_url = f'https://{self.hostname}/member.php?mod=logging&action=login&loginsubmit=yes&loginhash={loginhash}&inajax=1'
+        formData = {
+            'formhash': formhash,
+            'referer': f'https://{self.hostname}/',
+            'username': self.username,
+            'password': self.password,
+        }
+        login_rst = self.session.post(login_url, data=formData).text
+        if 'succeed' in login_rst:
+            logging.info('登陆成功')
+            return True
+        else:
+            logging.info('登陆失败，请检查账号或密码是否正确')
+            return False
+
+
 
     def account_login(self):
+        try:
+            if self.account_login_without_verify():
+                return True
+        except Exception:
+            logging.error('存在验证码，登陆失败，准备获取验证码中', exc_info=True)
+
         code = self.verify_code()
         if code =='':
             return False
-        
+
         loginhash, formhash = self.form_hash()
         login_url = f'https://{self.hostname}/member.php?mod=logging&action=login&loginsubmit=yes&loginhash={loginhash}&inajax=1'
         formData = {

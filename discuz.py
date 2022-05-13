@@ -29,7 +29,7 @@ class Discuz:
     def get_host(self,pub_url):  
         res = requests.get(pub_url)
         res.encoding = "utf-8"
-        url = re.search(r'a href="https://(.+?)/".+?>搜书吧入口', res.text)
+        url = re.search(r'a href="https://(.+?)/".+?>.+?入口</a>', res.text)
         if url != None:
             url = url.group(1)
             logging.info(f'获取到最新的论坛地址:https://{url}')
