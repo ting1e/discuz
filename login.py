@@ -3,6 +3,7 @@ from json import load
 from os import listdir
 import sys
 from time import time
+from PIL import Image, ImageSequence
 import logging
 import requests
 import ddddocr
@@ -34,6 +35,17 @@ class Login:
         return loginhash, formhash
 
     def verify_code_once(self):
+
+        def extract_longest_frame_from_url(self, img: bytes):
+            img = Image.open(io.BytesIO(img))
+
+            durations = [frame.info['duration'] for frame in ImageSequence.Iterator(img)]
+            longest_frame_index = durations.index(max(durations))
+
+            img.seek(longest_frame_index)  # 跳转到停留时间最长的那一帧
+
+            return img
+
         rst = self.session.get(f'https://{self.hostname}/misc.php?mod=seccode&action=update&idhash=cSA&0.3701502461393815&modid=member::logging').text
         update = re.search(r'update=(.+?)&idhash=', rst).group(1)
 
@@ -50,6 +62,10 @@ class Login:
         }
         rst = self.session.get(f'https://{self.hostname}/misc.php?mod=seccode&update={update}&idhash=cSA',
                             headers=code_headers)
+
+        # 如果为动态 gif 验证码，提取最长的一帧再 ocr
+        if rst.content[:3] == b'GIF':
+            return self.ocr.classification(extract_longest_frame_from_url(rst.content))
 
         return self.ocr.classification(rst.content)
 
